@@ -1,0 +1,1 @@
+sometimes to solve type hint issues,you need to put the folder structure when calling the variables as seen in the repositry in post controllers
