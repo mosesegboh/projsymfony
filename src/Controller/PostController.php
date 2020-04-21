@@ -3,9 +3,12 @@
 namespace App\Controller;
 
 
+use App\Form\PostType;
+use App\Services\FileUploader;
 use AppBundle\Entity\Product;
 use App\Entity\Post;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -45,20 +48,45 @@ class PostController extends AbstractController
      * @param Request $request
      * @return Response
      */
-    public function create(Request $request){
+    public function create(Request $request,FileUploader $fileUploader){
         //each row in the database is treated as an object
         $post = new Post();
-        $post ->setTitle('First Title');
+
+        //lets  use the form from our form helper
+        $form = $this->createForm(PostType::class, $post);
+
+        //to save data form to the database
+        $form->handleRequest($request);
+        //error display
+        $form->getErrors();
+        //the second parameter in the if statement is for form validity
+        if ($form->isSubmitted() && $form->isValid()){
+            $em = $this->getDoctrine()->getManager();
+            //get the file...the commented code below gives you access to some functions used below
+            /** @var UploadedFile $file */
+            $file=$request->files->get('post')['attachment'];
+            if ($file){
+                //we created a service and used it here
+                $filename=$fileUploader->uploadFile($file);
+
+                $post->setImage($filename);
+                //then use the em to save to the database
+                $em->persist($post);
+                //call the flush function to actually insert the query
+                $em->flush();
+            }
+
+            //redirect after submission
+            return $this->redirect($this->generateUrl('post.index'));
+        }
 
         //entity manager is what connects and talks to the database
-        $em = $this->getDoctrine()->getManager();
-        //then use the em to save to the database
-        $em->persist($post);
-        //call the flush function to actually insert the query
-        $em->flush();
+
 
         //return a response, you can also return a view if you like
-        return new Response('post was created');
+        return $this->render('post/create.html.twig', [
+            'form' => $form->createView()
+        ]);
     }
 
     //create the route with th id of what you want to show
@@ -68,9 +96,30 @@ class PostController extends AbstractController
      * @return Response
      */
     public function show(Post $post){
+        //you can use the below function and add some repository methods above when you use a query builder
+//        $post = $postRepository->findPostWithCategory()
         //return the view with the post
         return $this->render('post/show.html.twig',[
             'post'=>$post
         ]);
+    }
+
+    /**
+     * @Route("/delete{id}", name="delete")
+     * @return Response
+     */
+    public function remove(Post $post){
+        //entity manager is what connects and talks to the database
+        $em = $this->getDoctrine()->getManager();
+        //then use the em to save to the database
+        $em->remove($post);
+        //call the flush function to actually insert the query
+        $em->flush();
+
+        //add flash message
+        $this->addFlash('success', 'Post was removed successfully');
+
+        return $this->redirect($this->generateUrl('post.index'));
+
     }
 }

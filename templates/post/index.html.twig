@@ -3,12 +3,20 @@
 {% block title %}Hello PostController!{% endblock %}
 
 {% block body %}
+    {#    flash message#}
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">
+            {{ message }}
+        </div>
+    {% endfor %}
+
     <h1>List of All Posts</h1>
         <table class="table table-striped">
             <thead>
                 <tr>
                     <td>ID</td>
                     <td>Title</td>
+                    <td>Actions</td>
                 </tr>
             </thead>
             <tbody>
@@ -16,6 +24,7 @@
                 <tr>
                     <td>{{ post.id }}</td>
                     <td><a href="{{ path('post.show', {id: post.id}) }}">{{ post.title }}</a></td>
+                    <td><a class="text-danger" href="{{ path('post.delete', {id: post.id}) }}">Delete</a></td>
                 </tr>
             {% endfor %}
             </tbody>

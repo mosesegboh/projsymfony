@@ -1,1 +1,11 @@
 sometimes to solve type hint issues,you need to put the folder structure when calling the variables as seen in the repositry in post controllers
+after login , you can redirect the user with custom authenticator page.
+after creating login  page ,you migrate using bin/console doctrine:schema:update --dump sql command
+security.yaml is where you take care of access control
+when adding new details in your form/ database,do that in the appropriate file in your entity.and add the appropriate lines of code
+after that you regenerate entities through bin/console
+-when developing and you get the error which states that the app entity could not be converted to string, you need to add a tostring function to the corresponding entity
+php bin/console doctrine:schema:update --force
+-note that all entities has a repository and we can reach out to it to make some customer  and you can also use some query builder there as illustrated in the example
+-everything in symfony is a service. we could also create ours as referenced in the tutorial
+-also you can configure the above in services.yaml reference video for more
